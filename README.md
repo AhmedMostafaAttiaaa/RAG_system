@@ -29,12 +29,10 @@ pip install -r requirements.txt
 This project uses environment variables to manage sensitive keys securely (like API keys, secrets, etc.).
 
 - How to use them:
+
     1- Create a file named .env in the root directory of the project.
 
     2- Add your secret environment variables inside this file.
-    
-        - Example file:-
-        To help users know which variables they need to define, a file named .env.example is provided. This file is safe to share and contains placeholder keys:
 
 - You can duplicate it and rename to .env:
 ```bash

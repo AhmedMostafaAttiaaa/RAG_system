@@ -47,4 +47,7 @@ Use the ".env.example" to guide team members or collaborators on what environmen
 
 
 
-
+## RUN FASTAPI SERVER :
+```bash
+uvicorn main:app --reload --host 0.0.0.0
+```

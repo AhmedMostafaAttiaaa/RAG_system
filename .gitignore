@@ -130,6 +130,7 @@ celerybeat.pid
 # Environments
 .env
 .venv
+PhotosANDexp_for_myself
 env/
 venv/
 ENV/

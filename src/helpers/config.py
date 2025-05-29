@@ -8,7 +8,7 @@ class settings(BaseSettings):
 
     FILE_ALLOWED_EXTINTIONS: list
     FILE_MAX_SIZE: int
-
+    FILE_DEFAULT_CHUNCK_SIZE: int
     class Config:
         env_file = ".env"
 

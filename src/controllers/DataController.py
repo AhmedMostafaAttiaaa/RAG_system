@@ -2,10 +2,15 @@ from fastapi import UploadFile
 # Here they will inhirite from BaseController File in Controllers
 from .BaseController import BaseController
 from models import ResponseSignal
+from .ProjectController import ProjectController
+import regex as re
+import os
+
+# ----------------------------------------
 
 class DataController(BaseController):
     def __init__(self):
-        super().__init__() #to call the init of super === which is BaseController
+        super().__init__() # to call the init of super === which is BaseController
         self.size_scale = 1048576 # to convert MBs to bytes -> because file.size is dealing with bytes not MEGABYTES
 
 
@@ -17,3 +22,32 @@ class DataController(BaseController):
             return False, ResponseSignal.FILE_SIZE_EXCEEDED.value
 
         return True, ResponseSignal.FILE_UPLOADED_SUCCESS.value
+    
+    def generate_unique_filename(self, original_filename: str, project_id: str):
+
+        random_filename = self.generate_random_string()
+        project_path =ProjectController().get_project_path(project_id=project_id)
+
+        cleaned_file_name = self.get_clean_file_name(original_filename=original_filename)
+
+        new_file_path = os.path.join(
+
+            project_path,
+            random_filename + "__" + cleaned_file_name
+        )
+
+        while os.path.exists(new_file_path):
+            random_filename= self.generate_random_string()
+            new_file_path = os.path.join(
+                project_path,
+                random_filename + "__" + cleaned_file_name
+            )
+
+        return new_file_path
+
+    def get_clean_file_name (self, original_filename: str):
+
+            cleaned_file_name = re.sub(r'[^\w.]', '', original_filename.strip())
+            cleaned_file_name = cleaned_file_name.replace(" ","_")
+
+            return cleaned_file_name

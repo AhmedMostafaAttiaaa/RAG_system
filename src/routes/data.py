@@ -6,15 +6,18 @@ import os
 from models import ResponseSignal
 from helpers.config import get_settings, settings
 from controllers.DataController   import DataController  
-from controllers import ProjectController  
+from controllers import ProjectController
+from controllers.ProcessController import ProcessController
 import aiofiles
 import logging
+from .schemes.data import ProcessRequest
+
 
 logger = logging.getLogger('unicorn.error')
 
 data_router = APIRouter(prefix="/api/v1/data", tags=["/api/v1", "data"])
 
-@data_router.post("/upload/{project_id}")
+@data_router.post("/upload/{project_id}") #end point UPLOAD
 async def upload_data(
     project_id: str, file: UploadFile,
     app_settings = Depends(get_settings)
@@ -61,3 +64,34 @@ async def upload_data(
                     "file_id": file_id
                     }
         )        
+
+
+# -------------------------------NEXT endpoint -validate the file- ---------------------------------------------
+@data_router.post("/process/{project_id}")
+async def process_endpoint(project_id: str, process_request : ProcessRequest ): #process req type is ProcessRequest(BaseModel)
+
+    file_id = process_request.file_id
+    chunk_size =process_request.chunk_size
+    overlab_size = process_request.overlab_size
+
+    process_controller = ProcessController(project_id=project_id)
+    file_content = process_controller.get_file_content(file_id=file_id)
+    file_chunks=process_controller.process_file_content(
+        file_content=file_content,
+        file_id=file_id,
+        chunk_size=chunk_size,
+        overlab_size=overlab_size
+
+    )
+
+
+    if file_chunks is None or len(file_chunks)==0:
+        return JSONResponse (
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                    "signal": ResponseSignal.PROCESSING_FAILED.value
+                    }
+        )
+    
+    return file_chunks
+

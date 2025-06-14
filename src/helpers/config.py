@@ -9,6 +9,10 @@ class settings(BaseSettings):
     FILE_ALLOWED_EXTINTIONS: list
     FILE_MAX_SIZE: int
     FILE_DEFAULT_CHUNCK_SIZE: int
+
+    MONGODB_URL: str
+    MONGODB_DATABASE : str
+    
     class Config:
         env_file = ".env"
 

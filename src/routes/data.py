@@ -14,7 +14,10 @@ import logging
 from .schemes.data import ProcessRequest
 from models.ProjectModel import ProjectModel
 from models.ChunkModel import ChunkModel
-from models.db_schemes import DataChunk
+from models.db_schemes import DataChunk, Asset
+from models.AssetModel import AssetModel
+from models.enums.AssetTypeEnum import AssetTypeEnum
+
 
 
 logger = logging.getLogger('unicorn.error')
@@ -28,7 +31,7 @@ async def upload_data(
     app_settings = Depends(get_settings)
     ):
 
-    project_model = ProjectModel(
+    project_model = await ProjectModel.create_instance(
         db_client=request.app.db_client
 
     )
@@ -69,11 +72,25 @@ async def upload_data(
                     }
         )
 
+    # store assets into DB:
+    asset_model = await AssetModel.create_instance(
+        db_client=request.app.db_client
+    )
+
+    asset_resource = Asset(
+        asset_project_id=project.id,
+        asset_type=AssetTypeEnum.FILE.value,
+        asset_name=file_id,
+        asset_size=os.path.getsize(file_path)
+    )
+    asset_record = await asset_model.create_asset(asset=asset_resource) 
+
+
 
     return JSONResponse (
             content={
                     "signal": ResponseSignal.FILE_UPLOADED_SUCCESS.value,
-                    "file_id": file_id,
+                    "file_id": str(asset_record.id),
                     "project_id": str(project.id) 
                     }
         )         
@@ -89,7 +106,7 @@ async def process_endpoint(request : Request, project_id: str, process_request :
     do_reset =process_request.do_reset
 
 
-    project_model = ProjectModel(
+    project_model = await ProjectModel.create_instance(
         db_client=request.app.db_client
 
     )
@@ -103,7 +120,7 @@ async def process_endpoint(request : Request, project_id: str, process_request :
     #         project_id=project.id 
     #     )
 
-
+ 
 
     process_controller = ProcessController(project_id=project_id)
 
@@ -141,7 +158,7 @@ async def process_endpoint(request : Request, project_id: str, process_request :
         for i, chunk in enumerate(file_chunks) 
     ]
 
-    chunk_model = ChunkModel(
+    chunk_model = await ChunkModel.create_instance(
 
         db_client=request.app.db_client
     )
